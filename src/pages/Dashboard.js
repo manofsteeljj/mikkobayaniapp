@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import "../css/dashStyles.css";
 
 const Dashboard = () => {
-  const [posts, setPosts] = useState([]);
-  const [recentActivities, setRecentActivities] = useState([]);
+  const [posts, setPosts] = useState([]); // Default to an empty array
+  const [recentActivities, setRecentActivities] = useState([]); // Default to an empty array
   const [newPost, setNewPost] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -18,44 +18,48 @@ const Dashboard = () => {
   const fetchPosts = async () => {
     try {
       const response = await axios.get("http://192.168.1.2/bayaniapi/get_posts.php");
-      setPosts(response.data.posts);
+      console.log(response.data); 
+      setPosts(response.data.posts || []); 
     } catch (err) {
       console.error("Error fetching posts:", err);
       setError("Error fetching posts");
     }
   };
-
+  
   const fetchActivities = async () => {
     try {
       const response = await axios.get("http://192.168.1.2/bayaniapi/get_activities.php");
-      setRecentActivities(response.data.activities);
+      console.log(response.data); 
+      setRecentActivities(response.data.activities || []); 
     } catch (err) {
       console.error("Error fetching activities:", err);
       setError("Error fetching activities");
     }
   };
+  
 
   const handlePostSubmit = async (e) => {
     e.preventDefault();
     if (newPost.trim() === "") return;
-
+  
     try {
       const response = await axios.post("http://192.168.1.2/bayaniapi/create_post.php", {
         post_text: newPost,
         post_type: "text",
       });
-
+  
       if (response.data.success) {
-        fetchPosts(); // Reload posts after successful post creation
-        setNewPost(""); // Clear the input field
+        fetchPosts(); 
+        setNewPost(""); 
       } else {
-        setError("Error creating post");
+        setError(response.data.message || "Error creating post");  // Updated error handling
       }
     } catch (err) {
       console.error("Error creating post:", err);
-      setError("Error creating post");
+      setError(err.response ? err.response.data.message : "Error creating post");  // Capture detailed error
     }
   };
+  
 
   const handlePostDelete = async (postId) => {
     try {
